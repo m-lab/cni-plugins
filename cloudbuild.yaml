@@ -1,0 +1,15 @@
+options:
+  env:
+  - COMMIT_SHA=$COMMIT_SHA
+  - GIT_ORIGIN_URL=https://github.com/m-lab/disco.git
+  - WORKSPACE_LINK=/go/src/github.com/m-lab/disco
+
+steps:
+
+# Run unit tests for environment.
+- name: gcr.io/$PROJECT_ID/golang-cbif
+  args:
+  - go version
+  - go get -v -t ./...
+  - ./test_linux.sh
+
