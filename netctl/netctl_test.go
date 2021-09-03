@@ -58,7 +58,7 @@ var cniConf = []byte(`{
 
 func TestAdd(t *testing.T) {
 	targetNS, err := testutils.NewNS()
-	rtx.Must(err, "failed to create target test network namespace")
+	rtx.Must(err, "TestAdd(): failed to create target test netns")
 
 	defer targetNS.Close()
 	defer testutils.UnmountNS(targetNS)
@@ -68,7 +68,7 @@ func TestAdd(t *testing.T) {
 	osx.MustSetenv("PROC_CMDLINE_FOR_TESTING", CMDLINE)
 
 	err = writeSysctls(targetNS, originalSysctls)
-	rtx.Must(err, "failed to set sysctls in target namespace")
+	rtx.Must(err, "TestAdd(): failed to set sysctls in target netns")
 
 	args := &skel.CmdArgs{
 		ContainerID: "test",
@@ -81,7 +81,7 @@ func TestAdd(t *testing.T) {
 	_, _, err = testutils.CmdAddWithArgs(args, func() error {
 		return cmdAdd(args)
 	})
-	rtx.Must(err, "cmdAdd() produced an error")
+	rtx.Must(err, "TestAdd(): cmdAdd() produced an unexpected error")
 
 	// Verify that the netctl plugin set the sysctls to what we think they should be.
 	err = targetNS.Do(func(ns.NetNS) error {
@@ -94,17 +94,17 @@ func TestAdd(t *testing.T) {
 			}
 			value := strings.TrimSpace(string(content))
 			if value != expectedSysctls[key] {
-				t.Fatalf("expected sysctl %s value of %s, but got %s.", key, expectedSysctls[key], value)
+				t.Fatalf("TestAdd(): expected sysctl %s value of %s, but got %s.", key, expectedSysctls[key], value)
 			}
 		}
 		return nil
 	})
-	rtx.Must(err, "failed to read sysctls in target namespace")
+	rtx.Must(err, "TestAdd(): failed to read sysctls in target namespace")
 }
 
 func TestAddFailsWithNoIPAM(t *testing.T) {
 	targetNS, err := testutils.NewNS()
-	rtx.Must(err, "failed to create target test network namespace")
+	rtx.Must(err, "TestAddFailsWithNoIPAM(): failed to create target test netns")
 
 	defer targetNS.Close()
 	defer testutils.UnmountNS(targetNS)
@@ -132,7 +132,7 @@ func TestAddFailsWithNoIPAM(t *testing.T) {
 
 func TestAddFailsWithBadSysctl(t *testing.T) {
 	targetNS, err := testutils.NewNS()
-	rtx.Must(err, "failed to create target test network namespace")
+	rtx.Must(err, "TestAddFailsWithBadSysctl(): failed to create target test netns")
 
 	defer targetNS.Close()
 	defer testutils.UnmountNS(targetNS)
@@ -163,13 +163,13 @@ func TestAddFailsWithBadSysctl(t *testing.T) {
 
 func TestCheck(t *testing.T) {
 	targetNS, err := testutils.NewNS()
-	rtx.Must(err, "failed to create target test network namespace")
+	rtx.Must(err, "TestCheck(): failed to create target test netns")
 
 	defer targetNS.Close()
 	defer testutils.UnmountNS(targetNS)
 
 	err = writeSysctls(targetNS, originalSysctls)
-	rtx.Must(err, "failed to set sysctls in target namespace")
+	rtx.Must(err, "TestCheck(): failed to set sysctls in target namespace")
 
 	args := &skel.CmdArgs{
 		ContainerID: "test",
@@ -182,27 +182,29 @@ func TestCheck(t *testing.T) {
 	_, _, err = testutils.CmdAddWithArgs(args, func() error {
 		return cmdAdd(args)
 	})
-	rtx.Must(err, "cmdAdd() produced an error")
+	rtx.Must(err, "TestCheck(): cmdAdd() produced an unexpected error")
 
 	// Test successfull check case.
 	err = testutils.CmdCheckWithArgs(args, func() error {
 		return cmdCheck(args)
 	})
-	rtx.Must(err, "cmdCheck() produced an error")
+	if err != nil {
+		t.Fatalf("TestCheck(): was not expecting an error, but got: %v", err)
+	}
 
 	// Modify one of the sysctls to an unexpected value.
 	s := map[string]string{
 		"net.ipv6.conf.default.accept_ra": "1",
 	}
 	err = writeSysctls(targetNS, s)
-	rtx.Must(err, "failed to set sysctls in target namespace")
+	rtx.Must(err, "TestCheck(): failed to set sysctls in target namespace")
 
 	// Test unsuccessfull check case.
 	err = testutils.CmdCheckWithArgs(args, func() error {
 		return cmdCheck(args)
 	})
 	if err == nil {
-		t.Fatal("expected cmdCheck() to produce an error, but got none")
+		t.Fatal("TestCheck(): expected cmdCheck() to produce an error, but got none")
 	}
 }
 
