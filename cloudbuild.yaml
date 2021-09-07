@@ -1,0 +1,16 @@
+options:
+  env:
+  - COMMIT_SHA=$COMMIT_SHA
+  - GIT_ORIGIN_URL=https://github.com/m-lab/cni-plugins.git
+  - WORKSPACE_LINK=/go/src/github.com/m-lab/cni-plugins
+
+steps:
+
+# Run unit tests for environment.
+- name: gcr.io/$PROJECT_ID/golang-cbif
+  args:
+  - apt install --yes sudo
+  - go version
+  - go get -v -t ./...
+  - ./test_linux.sh
+
