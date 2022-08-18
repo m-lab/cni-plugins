@@ -11,6 +11,6 @@ steps:
   args:
   - apt install --yes sudo
   - go version
-  - go install -v -t ./...
+  - go get -v -t ./...
   - ./test_linux.sh
 
