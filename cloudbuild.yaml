@@ -7,7 +7,7 @@ options:
 steps:
 
 # Run unit tests for environment.
-- name: gcr.io/$PROJECT_ID/golang-cbif
+- name: 'gcr.io/$PROJECT_ID/golang-cbif:1.18'
   args:
   - apt install --yes sudo
   - go version
