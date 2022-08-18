@@ -7,7 +7,7 @@
 set -e
 
 # Install any necessary test dependencies.
-GOBIN=$(pwd)/bin go get github.com/m-lab/index2ip
+GOBIN=$(pwd)/bin go install github.com/m-lab/index2ip@latest
 
 echo "Running tests"
 
