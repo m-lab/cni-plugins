@@ -7,8 +7,9 @@ options:
 steps:
 
 # Run unit tests for environment.
-- name: 'gcr.io/$PROJECT_ID/golang-cbif:1.18'
+- name: 'gcr.io/$PROJECT_ID/golang-cbif:1.20'
   args:
+  - apt update
   - apt install --yes sudo
   - go version
   - go get -v -t ./...
